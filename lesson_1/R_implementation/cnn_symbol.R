@@ -7,14 +7,16 @@ get_symbol <- function(num_classes) {
   # Input
   input_data = mx.symbol.Variable(name = "data")
   
-  # Convultional layer 1
-  conv_1_1 = mx.symbol.Convolution(data = input_data, kernel = c(64,64), stride = c(1,1), num_filter = 32, name = "conv_1_1")
+  # Convultional layer 1 | Input size 256x256
+  pad_size <- round(32 / 2, digits = 0)
+  conv_1_1 = mx.symbol.Convolution(data = input_data, kernel = c(32,32), stride = c(1,1), num_filter = 32, pad = c(pad_size, pad_size), name = "conv_1_1")
   conv_1_1 = mx.symbol.Activation(data = conv_1_1, act_type = "relu", name = "act_relu_1_1")
-  conv_1_2 = mx.symbol.Convolution(data = conv_1_1, kernel = c(64,64), stride = c(1,1), num_filter = 32, name = "conv_1_2")
+  conv_1_2 = mx.symbol.Convolution(data = conv_1_1, kernel = c(32,32), stride = c(1,1), num_filter = 32, c(pad_size, pad_size), name = "conv_1_2")
   conv_1_2 = mx.symbol.Activation(data = conv_1_2, act_type = "relu", name = "act_relu_1_2")
-  pool_1 = mx.symbol.Pooling(data = conv_1_2, kernel = c(4,4), stride = c(2,2), pool_type = "max", name = "pool_1")
+  pool_1 = mx.symbol.Pooling(data = conv_1_2, kernel = c(2,2), stride = c(2,2), pool_type = "max", name = "pool_1")
   
   # Convultional layer 2
+  pad_size = 
   conv_2_1 = mx.symbol.Convolution(data = pool_1, kernel = c(32,32), stride = c(1,1), num_filter = 128, name = "conv_1_1")
   conv_2_1 = mx.symbol.Activation(data = conv_2_1, act_type = "relu", name = "act_relu_2_1")
   conv_2_2 = mx.symbol.Convolution(data = conv_2_1, kernel = c(32,32), stride = c(1,1), num_filter = 128, name = "conv_2_2")
@@ -29,7 +31,7 @@ get_symbol <- function(num_classes) {
   pool_3 = mx.symbol.Pooling(data = conv_3_2, kernel = c(2,2), stride = c(2,2), pool_type = "max", name = "pool_3")
   
   # Convultional layer 4
-  conv_4_1 = mx.symbol.Convolution(data = pool_3, kernel = c(4,4), stride = c(2,1), num_filter = 512, name = "conv_4_1")
+  conv_4_1 = mx.symbol.Convolution(data = pool_3, kernel = c(4,4), stride = c(1,1), num_filter = 512, name = "conv_4_1")
   conv_4_1 = mx.symbol.Activation(data = conv_4_1, act_type = "relu", name = "act_relu_4_1")
   conv_4_2 = mx.symbol.Convolution(data = conv_4_1, kernel = c(4,4), stride = c(1,1), num_filter = 512, name = "conv_4_2")
   conv_4_2 = mx.symbol.Activation(data = conv_4_2, act_type = "relu", name = "act_relu_4_2")

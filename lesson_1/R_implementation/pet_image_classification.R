@@ -6,7 +6,7 @@ library(stringr)
 library(readr)
 
 # Loaging labels
-labels <- read_table2("../datasets/image_classification/oxford-iiit-pet/annotations/list.txt", 
+labels <- read_table2("../../datasets/image_classification/oxford-iiit-pet/annotations/list.txt", 
                       col_names = FALSE, comment = "#")
 labels <- labels[,1:3]
 names(labels) <- c("image_file", "class_id", "species")
@@ -39,25 +39,27 @@ View(input_list$train)
 source("cnn_symbol.R")
 symbol <- get_symbol(nrow(labels_dict))
 
-# ../datasets/image_classification/oxford-iiit-pet/images
+train_bin <- "../../datasets/image_classification/oxford-iiit-pet/processed_files/train.bin"
+val_bin <- "../../datasets/image_classification/oxford-iiit-pet/processed_files/val.bin"
+test_bin <- "../../datasets/image_classification/oxford-iiit-pet/processed_files/val.bin"
 
 im2rec(image_lst = "train_list",
-       root = "../datasets/image_classification/oxford-iiit-pet/images/",
-       output_rec = "train.bin")
+       root = "../../datasets/image_classification/oxford-iiit-pet/images/",
+       output_rec = train_bin)
 
 im2rec(image_lst = "val_list",
-       root = "../datasets/image_classification/oxford-iiit-pet/images/",
-       output_rec = "val.bin")
+       root = "../../datasets/image_classification/oxford-iiit-pet/images/",
+       output_rec = val_bin)
 
 im2rec(image_lst = "test_list",
-       root = "../datasets/image_classification/oxford-iiit-pet/images/",
-       output_rec = "test.bin")
+       root = "../../datasets/image_classification/oxford-iiit-pet/images/",
+       output_rec = test_bin)
 
-train <- mx.io.ImageRecordIter(path.imgrec = "train.bin",
+train <- mx.io.ImageRecordIter(path.imgrec = train_bin,
                                batch.size = 32,
                                data.shape = c(256, 256, 3))
 
-val <- mx.io.ImageRecordIter(path.imgrec = "val.bin",
+val <- mx.io.ImageRecordIter(path.imgrec = val_bin,
                              batch.size = 32,
                              data.shape = c(256, 256, 3))
 
