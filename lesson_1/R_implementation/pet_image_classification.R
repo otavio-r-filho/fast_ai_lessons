@@ -45,23 +45,28 @@ test_bin <- "../../datasets/image_classification/oxford-iiit-pet/processed_files
 
 im2rec(image_lst = "train_list",
        root = "../../datasets/image_classification/oxford-iiit-pet/images/",
-       output_rec = train_bin)
+       output_rec = train_bin,
+       new_size = 256)
 
 im2rec(image_lst = "val_list",
        root = "../../datasets/image_classification/oxford-iiit-pet/images/",
-       output_rec = val_bin)
+       output_rec = val_bin,
+       new_size = 256)
 
 im2rec(image_lst = "test_list",
        root = "../../datasets/image_classification/oxford-iiit-pet/images/",
-       output_rec = test_bin)
+       output_rec = test_bin,
+       new_size = 256)
 
 train <- mx.io.ImageRecordIter(path.imgrec = train_bin,
-                               batch.size = 32,
-                               data.shape = c(256, 256, 3))
+                               batch.size = 8,
+                               data.shape = c(256, 256, 3),
+                               scale = 1/255)
 
 val <- mx.io.ImageRecordIter(path.imgrec = val_bin,
-                             batch.size = 32,
-                             data.shape = c(256, 256, 3))
+                             batch.size = 8,
+                             data.shape = c(256, 256, 3),
+                             scale = 1/255)
 
 model <- mx.model.FeedForward.create(
   X = train,
