@@ -8,26 +8,37 @@ Created on Wed Mar 20 08:11:53 2019
 from os import path
 from glob import glob
 import re
+import numpy as np
+import pandas as pd
 
 img_path = "../../datasets/image_classification/oxford-iiit-pet/images/*.jpg"
 
 def get_species(x):
     return "cat" if str.isupper(x[0]) else "dog"
 
-def get_class_list(img_list):
-    def remove_ext(x):
+def remove_ext(x):
         tmp = re.sub("_([0-9]{1,})\.jpg", "", x)
-        tmp = tmp.replace("_", " ", 10)
-        return tmp
+        return tmp.replace("_", " ", 10)
     
-    class_list = list(map(remove_ext, img_list))
-    class_list = set(class_list)
-    return class_list
+def get_classid(img_file, class2id):
+    return class2id[remove_ext(img_file)]
+
+def assign_class_dict(img_list):    
+    class_list = list(set(map(remove_ext, img_list)))
+    class_list = sorted(class_list)
+    
+    class_ids = np.arange(1, len(class_list) + 1)
+    
+    class2id = dict(zip(class_list, class_ids))
+    id2class = dict(zip(class_ids, class_list))
+    
+    class_id_list = [get_classid(img_file, class2id) for img_file in img_list]
+    
+    return class_id_list, class2id, id2class
 
 img_list = list(map(path.basename, glob(img_path)))
-img_list
 species_list = list(map(get_species, img_list))
-species_list
+class_id_list, class2id, id2class = assign_class_dict(img_list)
 
-class_list = get_class_list(img_list)
-class_list
+pet_df = pd.DataFrame({"class": class_id_list, "file": img_list, "species": species_list})
+pet_df.head(10)
