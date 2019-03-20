@@ -4,6 +4,7 @@ library(tidyr)
 library(ggplot2)
 library(stringr)
 library(readr)
+library(imager)
 
 # Loaging labels
 labels <- read_table2("../../datasets/image_classification/oxford-iiit-pet/annotations/list.txt", 
@@ -30,41 +31,50 @@ labels <- labels[c("index", "class_id", "image_file")]
 
 source("aux_functions.R")
 input_list <- split_dataset(labels, 0.7, 0.15)
-write_delim(input_list$train, "train_list", delim = " \t ", col_names = F)
-write_delim(input_list$val, "val_list", delim = " \t ", col_names = F)
-write_delim(input_list$test, "test_list", delim = " \t ", col_names = F)
 
-View(input_list$train)
-
-source("cnn_symbol.R")
-symbol <- get_symbol(nrow(labels_dict))
-
+img_root_dir <- "../../datasets/image_classification/oxford-iiit-pet/images/"
 train_bin <- "../../datasets/image_classification/oxford-iiit-pet/processed_files/train.bin"
 val_bin <- "../../datasets/image_classification/oxford-iiit-pet/processed_files/val.bin"
 test_bin <- "../../datasets/image_classification/oxford-iiit-pet/processed_files/val.bin"
+train_lst <- "../../datasets/image_classification/oxford-iiit-pet/processed_files/train.lst"
+val_lst <- "../../datasets/image_classification/oxford-iiit-pet/processed_files/val.lst"
+test_lst <- "../../datasets/image_classification/oxford-iiit-pet/processed_files/test.lst"
 
-im2rec(image_lst = "train_list",
-       root = "../../datasets/image_classification/oxford-iiit-pet/images/",
+train_img_paths <- apply_prefix(input_list$train$image_file, img_root_dir)
+val_img_paths <- apply_prefix(input_list$val$image_file, img_root_dir)
+test_img_paths <- apply_prefix(input_list$test$image_file, img_root_dir)
+
+write_delim(input_list$train, train_lst, delim = '\t', col_names = F)
+write_delim(input_list$val, val_lst, delim = '\t', col_names = F)
+write_delim(input_list$test, test_lst, delim = '\t', col_names = F)
+
+#View(input_list$train)
+
+source("cnn_symbol_v2.R")
+symbol <- get_symbol(nrow(labels_dict))
+
+im2rec(image_lst = train_lst,
+       root = img_root_dir,
        output_rec = train_bin,
        new_size = 256)
 
-im2rec(image_lst = "val_list",
-       root = "../../datasets/image_classification/oxford-iiit-pet/images/",
+im2rec(image_lst = val_lst,
+       root = img_root_dir,
        output_rec = val_bin,
        new_size = 256)
 
-im2rec(image_lst = "test_list",
-       root = "../../datasets/image_classification/oxford-iiit-pet/images/",
+im2rec(image_lst = test_lst,
+       root = img_root_dir,
        output_rec = test_bin,
        new_size = 256)
 
 train <- mx.io.ImageRecordIter(path.imgrec = train_bin,
-                               batch.size = 8,
+                               batch.size = 32,
                                data.shape = c(256, 256, 3),
                                scale = 1/255)
 
 val <- mx.io.ImageRecordIter(path.imgrec = val_bin,
-                             batch.size = 8,
+                             batch.size = 32,
                              data.shape = c(256, 256, 3),
                              scale = 1/255)
 
@@ -74,6 +84,7 @@ model <- mx.model.FeedForward.create(
   ctx = mx.gpu(),
   symbol = symbol,
   eval.metric = mx.metric.top_k_accuracy,
+  array.batch.size = 32,
   num.round = 50,
   batch.end.callback = mx.callback.log.train.metric(10),
   epoch.end.callback = mx.callback.save.checkpoint("dg_classifier", period = 10),

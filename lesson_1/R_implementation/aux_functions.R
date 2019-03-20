@@ -21,3 +21,7 @@ split_dataset <- function(ds_list, train_split, val_split) {
 get_iterators <- function(input_list, input_shape) {
   train_it = mx.io.
 }
+
+apply_prefix <- function(img_list, prefix){
+  str_c(prefix, img_list)
+}
