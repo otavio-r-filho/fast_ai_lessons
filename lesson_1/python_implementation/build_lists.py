@@ -23,5 +23,5 @@ class_dict.loc[:, "file"].replace("_", " ", regex = True, inplace = True)
 class_dict.drop_duplicates(keep = "first", inplace = True)
 class_dict.rename(columns  = {"class id": "class", "file": "breed"}, inplace = True)
 class_dict.set_index(keys = "class", inplace = True)
-class_dict.head()
 class_dict = class_dict.to_dict("index")
+class_dict
