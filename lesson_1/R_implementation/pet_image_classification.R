@@ -36,7 +36,7 @@ write_delim(input_list$test, "test_list", delim = " \t ", col_names = F)
 
 View(input_list$train)
 
-source("cnn_symbol.R")
+source("cnn_symbol_v2.R")
 symbol <- get_symbol(nrow(labels_dict))
 
 train_bin <- "../../datasets/image_classification/oxford-iiit-pet/processed_files/train.bin"
