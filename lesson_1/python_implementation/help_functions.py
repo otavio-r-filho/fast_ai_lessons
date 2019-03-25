@@ -7,13 +7,14 @@ Created on Fri Mar 22 11:22:47 2019
 """
 
 from glob import glob
-from os import path, system, remove
+from os import path, system, remove, walk, scandir
 import pandas as pd
 import re
 from time import time
 import numpy as np
 from numpy.random import shuffle, seed, randint, rand
 from sys import platform
+from sklearn.preprocessing import OneHotEncoder
 import subprocess
 
 def os_cmd(cmd):
@@ -128,9 +129,19 @@ def split_dataset(dataset_path, val_split, test_split = 0.0):
     
     remove(fname)
 
+def load_dataset(dataset_path):
+    '''
+    '''
+    class_names = [d.name for d in scandir(dataset_path)]
+    class_ids = np.arange(len(class_names))
+    class_dict = dict(zip(class_names, class_ids))
+    print(class_dict)
 
 dataset_path = "../../datasets/image_classification/oxford-iiit-pet/images"
 if platform == 'win32': dataset_path = "..\..\..\datasets\image_classification\oxford-iiit-pet\images"
 val_split = 0.15
 test_split = 0.15
-split_dataset(dataset_path, val_split, test_split)   
+split_dataset(dataset_path, val_split, test_split)
+load_dataset(path.join(dataset_path, "test"))
+
+
