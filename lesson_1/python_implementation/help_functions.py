@@ -16,6 +16,7 @@ from numpy.random import shuffle, seed, randint, rand
 from sys import platform
 from sklearn.preprocessing import OneHotEncoder
 import subprocess
+from PIL import Image
 
 def os_cmd(cmd):
     '''
@@ -127,18 +128,41 @@ def split_dataset(dataset_path, val_split, test_split = 0.0):
     else:
         print("Success!")
     
-    remove(fname)
+    remove(fname)   
 
-def load_dataset(dataset_path):
+def load_dataset(dataset_path, shuffle_instances = True):
     '''
+    Function to load 
     '''
-    class_names = [d.name for d in scandir(dataset_path)]
-    class_ids = np.arange(len(class_names))
-    class_dict = dict(zip(class_names, class_ids))
-    print(class_dict)
+    class_names = []
+    class_files = []
+    
+    for root, dirs, files in walk(test_dataset_path):
+        for f in files:
+            class_names.append(path.basename(root))
+            class_files.append(f)
+            
+    class_names = np.array(class_names)
+    class_files = np.array(class_files)
+    onehot_labels = OneHotEncoder(sparse = False).fit_transform(class_names.reshape((-1,1)))
+    
+    if shuffle_instances:
+        shuffled_idx = np.arange(class_names.shape[0])
+        np.random.shuffle(shuffled_idx)
+        
+        class_names = class_names[shuffled_idx]
+        class_files = class_files[shuffled_idx]
+        onehot_labels = onehot_labels[shuffled_idx]
+        
+    return class_names, class_files, onehot_labels
 
 dataset_path = "../../datasets/image_classification/oxford-iiit-pet/images"
-if platform == 'win32': dataset_path = "..\..\..\datasets\image_classification\oxford-iiit-pet\images"
+if platform == 'win32':
+    dataset_path = "..\..\..\datasets\image_classification\oxford-iiit-pet\images"
+train_dataset_path = path.join(dataset_path, "train")
+val_dataset_path = path.join(dataset_path, "val")
+test_dataset_path = path.join(dataset_path, "test")
+
 val_split = 0.15
 test_split = 0.15
 split_dataset(dataset_path, val_split, test_split)
