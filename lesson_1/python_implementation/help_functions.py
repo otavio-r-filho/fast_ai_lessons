@@ -128,9 +128,9 @@ def split_dataset(dataset_path, val_split, test_split = 0.0):
     else:
         print("Success!")
     
-    remove(fname)   
+    remove(fname)
 
-def load_dataset(dataset_path, shuffle_instances = True):
+def read_dataset(dataset_path, shuffle_instances = True, encoder = None):
     '''
     Function to load 
     '''
@@ -140,11 +140,16 @@ def load_dataset(dataset_path, shuffle_instances = True):
     for root, dirs, files in walk(test_dataset_path):
         for f in files:
             class_names.append(path.basename(root))
-            class_files.append(f)
-            
+            class_files.append(path.abspath(path.join(root, f)))
+    
     class_names = np.array(class_names)
     class_files = np.array(class_files)
-    onehot_labels = OneHotEncoder(sparse = False).fit_transform(class_names.reshape((-1,1)))
+    
+    if encoder is None:
+        class_names_set = np.unique(class_names)
+        encoder = OneHotEncoder(sparse = False).fit(class_names_set.reshape((-1,1)))
+    
+    onehot_labels = encoder.transform(class_names.reshape((-1,1)))
     
     if shuffle_instances:
         shuffled_idx = np.arange(class_names.shape[0])
@@ -154,7 +159,7 @@ def load_dataset(dataset_path, shuffle_instances = True):
         class_files = class_files[shuffled_idx]
         onehot_labels = onehot_labels[shuffled_idx]
         
-    return class_names, class_files, onehot_labels
+    return class_names, class_files, onehot_labels, encoder
 
 dataset_path = "../../datasets/image_classification/oxford-iiit-pet/images"
 if platform == 'win32':
@@ -162,6 +167,18 @@ if platform == 'win32':
 train_dataset_path = path.join(dataset_path, "train")
 val_dataset_path = path.join(dataset_path, "val")
 test_dataset_path = path.join(dataset_path, "test")
+
+
+train_class_names, train_class_files, train_onehot_labels, encoder = read_dataset(train_dataset_path)
+val_class_names, val_class_files, val_onehot_labels, _ = read_dataset(val_dataset_path, encoder = encoder)
+test_class_names, test_class_files, test_onehot_labels, _ = read_dataset(test_dataset_path, encoder = encoder)
+
+img = Image.open(train_class_files[0]).convert("RGB").resize((299,299), Image.LANCZOS)
+img = np.array(img)
+img.shape
+
+for oh in train_onehot_labels:
+    print(oh)
 
 val_split = 0.15
 test_split = 0.15
